@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriGest — Gestão de Feiras Agroecológicas</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ===================== TELA DE LOGIN ===================== -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-logo">
+    <div class="logo-text">AgriGest</div>
+    <div class="logo-sub">Gestão de Feiras Agroecológicas</div>
+  </div>
+  <div class="login-card">
+    <div id="login-erro" class="login-erro"></div>
+    <form id="form-login">
+      <div class="form-group">
+        <label for="login-email">E-mail</label>
+        <input type="email" id="login-email" autocomplete="username" required>
+      </div>
+      <div class="form-group">
+        <label for="login-senha">Senha</label>
+        <input type="password" id="login-senha" autocomplete="current-password" required>
+      </div>
+      <button type="submit" id="btn-login" class="btn-login">Entrar</button>
+    </form>
+    <div class="login-hint">Demonstração: admin@agrigest.com / agrigest123</div>
+  </div>
+</div>
+
+<!-- ===================== APLICAÇÃO ===================== -->
+<div id="app" class="app" style="display:none">
+
+  <div class="topbar">
+    <div class="brand">🌱 AGRIGEST</div>
+    <nav>
+      <a data-page="dashboard" id="tn-dash">Dashboard</a>
+      <a id="tn-cadagri">Cad. Agricultores</a>
+      <a id="tn-cadprod">Cad. Produtos</a>
+      <a id="tn-regvenda">Registrar Venda</a>
+    </nav>
+    <div class="user-area">
+      <span id="user-nome">—</span>
+      <a id="btn-logout">Sair</a>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="sidebar">
+      <div class="sec-label">Visão geral</div>
+      <a data-page="dashboard" id="sb-dash"><i>📊</i> Dashboard</a>
+      <a data-page="dashboard" id="sb-rel"><i>📈</i> Relatórios</a>
+
+      <div class="sec-label">Cadastros</div>
+      <a data-page="agricultores" id="sb-agri"><i>👤</i> Agricultores</a>
+      <a data-page="produtos" id="sb-prod"><i>🥕</i> Produtos</a>
+
+      <div class="sec-label">Comercial</div>
+      <a data-page="vendas" id="sb-vend"><i>🧾</i> Vendas</a>
+    </div>
+
+    <div class="content">
+
+      <!-- ---------- DASHBOARD ---------- -->
+      <div class="page" id="page-dashboard">
+        <div class="breadcrumb">Início</div>
+        <div class="page-title">Dashboard</div>
+        <div class="page-sub">Visão geral da feira em tempo real.</div>
+
+        <div class="cards-row">
+          <div class="kpi">
+            <div class="kpi-icon green">👤</div>
+            <div class="kpi-label">Agricultores ativos</div>
+            <div class="kpi-val" id="kpi-agricultores">—</div>
+            <div class="kpi-sub pos" id="kpi-agricultores-sub"></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-icon amber">📦</div>
+            <div class="kpi-label">Estoque baixo</div>
+            <div class="kpi-val" id="kpi-estoque-baixo">—</div>
+            <div class="kpi-sub warn">produtos precisando reposição</div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-icon blue">🧾</div>
+            <div class="kpi-label">Vendas hoje</div>
+            <div class="kpi-val" id="kpi-vendas-hoje">—</div>
+            <div class="kpi-sub" id="kpi-vendas-pendentes"></div>
+          </div>
+          <div class="kpi">
+            <div class="kpi-icon purple">💰</div>
+            <div class="kpi-label">Faturamento do mês</div>
+            <div class="kpi-val" id="kpi-faturamento">—</div>
+            <div class="kpi-sub" id="kpi-total-vendas"></div>
+          </div>
+        </div>
+
+        <div id="alert-estoque" class="alert-bar" style="display:none">
+          ⚠️ <span id="alert-estoque-texto"></span>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">Últimas vendas</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Produto</th><th>Cliente</th><th>Qtd.</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th>
+              </tr>
+            </thead>
+            <tbody id="tbl-ultimas-vendas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- AGRICULTORES (lista) ---------- -->
+      <div class="page" id="page-agricultores">
+        <div class="breadcrumb">Cadastros</div>
+        <div class="page-title">Agricultores</div>
+        <div class="page-sub">Produtores cadastrados na feira.</div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            🔎 <input type="text" id="busca-agri" placeholder="Buscar por nome ou CPF...">
+          </div>
+          <button class="btn-primary" id="btn-novo-agri">+ Novo agricultor</button>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Cidade/UF</th><th>Total vendido</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="tbl-agricultores"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- AGRICULTORES (form) ---------- -->
+      <div class="page" id="page-cad-agri">
+        <div class="breadcrumb">Cadastros / Agricultores</div>
+        <div class="page-title" id="cad-agri-titulo">Novo agricultor</div>
+        <div class="page-sub">Preencha os dados do produtor.</div>
+
+        <div class="panel">
+          <form id="form-agri">
+            <input type="hidden" id="agri-id">
+            <div class="section-header">Dados pessoais</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="agri-nome">Nome completo *</label>
+                <input type="text" id="agri-nome" required>
+              </div>
+              <div class="form-group">
+                <label for="agri-cpf">CPF *</label>
+                <input type="text" id="agri-cpf" placeholder="000.000.000-00" required>
+              </div>
+              <div class="form-group">
+                <label for="agri-email">E-mail</label>
+                <input type="email" id="agri-email">
+              </div>
+              <div class="form-group">
+                <label for="agri-telefone">Telefone *</label>
+                <input type="text" id="agri-telefone" placeholder="(00) 00000-0000" required>
+              </div>
+            </div>
+
+            <div class="section-header">Endereço</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="agri-endereco">Endereço</label>
+                <input type="text" id="agri-endereco">
+              </div>
+              <div class="form-group">
+                <label for="agri-cep">CEP</label>
+                <input type="text" id="agri-cep">
+              </div>
+              <div class="form-group">
+                <label for="agri-cidade">Cidade</label>
+                <input type="text" id="agri-cidade">
+              </div>
+              <div class="form-group">
+                <label for="agri-estado">Estado (UF)</label>
+                <input type="text" id="agri-estado" maxlength="2" placeholder="CE">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" data-page="agricultores">Cancelar</button>
+              <button type="submit" class="btn-primary" id="btn-salvar-agri">Salvar agricultor</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ---------- PRODUTOS (lista) ---------- -->
+      <div class="page" id="page-produtos">
+        <div class="breadcrumb">Cadastros</div>
+        <div class="page-title">Produtos</div>
+        <div class="page-sub">Itens disponíveis para venda na feira.</div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            🔎 <input type="text" id="busca-prod" placeholder="Buscar por nome ou categoria...">
+          </div>
+          <button class="btn-primary" id="btn-novo-prod">+ Novo produto</button>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Produto</th><th>Categoria</th><th>Agricultor</th><th>Preço</th><th>Estoque</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody id="tbl-produtos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- PRODUTOS (form) ---------- -->
+      <div class="page" id="page-cad-prod">
+        <div class="breadcrumb">Cadastros / Produtos</div>
+        <div class="page-title" id="cad-prod-titulo">Novo produto</div>
+        <div class="page-sub">Cadastre um produto e vincule ao agricultor responsável.</div>
+
+        <div class="panel">
+          <form id="form-prod">
+            <input type="hidden" id="prod-id">
+            <div class="section-header">Dados do produto</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="prod-nome">Nome *</label>
+                <input type="text" id="prod-nome" required>
+              </div>
+              <div class="form-group">
+                <label for="prod-categoria">Categoria *</label>
+                <input type="text" id="prod-categoria" placeholder="Hortaliças, frutas, laticínios..." required>
+              </div>
+              <div class="form-group">
+                <label for="prod-agricultor">Agricultor responsável *</label>
+                <select id="prod-agricultor" required></select>
+              </div>
+              <div class="form-group">
+                <label for="prod-tipovenda">Tipo de venda *</label>
+                <select id="prod-tipovenda" required>
+                  <option value="kg">kg</option>
+                  <option value="Litro">Litro</option>
+                  <option value="Unidade">Unidade</option>
+                  <option value="Caixa">Caixa</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="section-header">Preço e estoque</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="prod-preco">Preço unitário (R$) *</label>
+                <input type="number" step="0.01" min="0" id="prod-preco" required>
+              </div>
+              <div class="form-group">
+                <label for="prod-estoque">Estoque atual</label>
+                <input type="number" step="0.01" min="0" id="prod-estoque" value="0">
+              </div>
+              <div class="form-group">
+                <label for="prod-estoquemin">Estoque mínimo</label>
+                <input type="number" step="0.01" min="0" id="prod-estoquemin" value="10">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px">
+              <label for="prod-descricao">Descrição</label>
+              <textarea id="prod-descricao"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" data-page="produtos">Cancelar</button>
+              <button type="submit" class="btn-primary" id="btn-salvar-prod">Salvar produto</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- ---------- VENDAS (lista) ---------- -->
+      <div class="page" id="page-vendas">
+        <div class="breadcrumb">Comercial</div>
+        <div class="page-title">Vendas</div>
+        <div class="page-sub">Histórico de vendas registradas.</div>
+
+        <div class="toolbar">
+          <div class="search-box">
+            🔎 <input type="text" id="busca-venda" placeholder="Buscar por cliente ou produto...">
+          </div>
+          <button class="btn-primary" id="btn-nova-venda">+ Registrar venda</button>
+        </div>
+
+        <div class="panel">
+          <table>
+            <thead>
+              <tr><th>Produto</th><th>Cliente</th><th>Qtd.</th><th>Valor</th><th>Pagamento</th><th>Status</th><th>Data</th><th></th></tr>
+            </thead>
+            <tbody id="tbl-vendas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ---------- VENDAS (form) ---------- -->
+      <div class="page" id="page-reg-venda">
+        <div class="breadcrumb">Comercial / Vendas</div>
+        <div class="page-title">Registrar venda</div>
+        <div class="page-sub">O valor e o estoque são calculados automaticamente.</div>
+
+        <div class="panel">
+          <form id="form-venda">
+            <div class="section-header">Produto</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="venda-produto">Produto *</label>
+                <select id="venda-produto" required></select>
+              </div>
+              <div class="form-group">
+                <label for="venda-quantidade">Quantidade *</label>
+                <input type="number" step="0.01" min="0.01" id="venda-quantidade" required>
+              </div>
+              <div class="form-group">
+                <label for="venda-desconto">Desconto (R$)</label>
+                <input type="number" step="0.01" min="0" id="venda-desconto" value="0">
+              </div>
+              <div class="form-group">
+                <label>Valor final estimado</label>
+                <input type="text" id="venda-valor-estimado" disabled value="R$ 0,00">
+              </div>
+            </div>
+
+            <div class="section-header">Cliente e pagamento</div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="venda-cliente">Nome do cliente *</label>
+                <input type="text" id="venda-cliente" required>
+              </div>
+              <div class="form-group">
+                <label for="venda-cliente-tel">Telefone do cliente</label>
+                <input type="text" id="venda-cliente-tel">
+              </div>
+              <div class="form-group">
+                <label for="venda-pagamento">Forma de pagamento *</label>
+                <select id="venda-pagamento" required>
+                  <option value="Dinheiro">Dinheiro</option>
+                  <option value="PIX">PIX</option>
+                  <option value="Cartão de débito">Cartão de débito</option>
+                  <option value="Cartão de crédito">Cartão de crédito</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="venda-status">Status</label>
+                <select id="venda-status">
+                  <option value="concluida">Concluída</option>
+                  <option value="pendente">Pendente</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom:14px">
+              <label for="venda-obs">Observações</label>
+              <textarea id="venda-obs"></textarea>
+            </div>
+
+            <div class="form-actions">
+              <button type="button" class="btn-cancel" data-page="vendas">Cancelar</button>
+              <button type="submit" class="btn-primary" id="btn-salvar-venda">Registrar venda</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
