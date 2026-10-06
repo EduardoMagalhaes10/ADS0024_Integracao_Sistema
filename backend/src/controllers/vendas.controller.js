@@ -73,7 +73,7 @@ function create(req, res) {
   }
 
   const valorUnitario = produto.preco_unitario;
-  const valorFinal = qtd * valorUnitario + descontoFinal;
+  const valorFinal = qtd * valorUnitario - descontoFinal;
 
   const info = db.prepare(
     `INSERT INTO vendas (produto_id, quantidade, valor_unitario, desconto, valor_final, cliente_nome, cliente_cpf, cliente_telefone, forma_pagamento, status, observacoes)
